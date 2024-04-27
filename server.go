@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
+
+	alimysql "github.com/Catlordx/CampusTrade/internal/db/mysql"
 
 	"net/http"
 
@@ -19,14 +22,15 @@ type Product struct {
 }
 
 func main() {
-	// v := vipr.New()
-	// v.SetConfigFile("./configs/config.dev.toml")
-	//if err := v.ReadInConfig(); err != nil {
-	//	panic(fmt.Errorf("fatal error reading config file: %w", err))
-	//}
-	//fmt.Println(v.GetString("title"))
-	dsn := "cat:xiaoyuan@123$456@tcp(8.130.120.24:3306)/demo?charset=utf8mb4&parseTime=True"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	v := viper.New()
+	v.SetConfigFile("./configs/config.dev.toml")
+	var conf = alimysql.DbConfig{}
+	conn, err := conf.LoadDbConfigFromViper(v)
+	if err != nil {
+		panic("Failed to load config")
+	}
+
+	db, err := gorm.Open(mysql.Open(conn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
