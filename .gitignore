@@ -1,2 +1,4 @@
 .idea
 configs
+init_mysql.go
+assets

@@ -7,7 +7,11 @@ package mysql
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/spf13/viper"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type DbConfig struct {
@@ -42,20 +46,34 @@ func (db *DbConfig) String() string {
 		db.dbname)
 }
 
+// Connect connect to the database and return database handle
+func Connect(instance *DbConfig) (*gorm.DB, error) {
+	profile_loc := "../../../configs/config.dev.toml"
+	v := viper.New()
+	v.SetConfigFile(profile_loc)
+	dsn, err := instance.LoadDbConfigFromViper(v)
+	if err != nil {
+		log.Fatal("Unable to open the the database connection")
+	}
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic("Failed to connect database")
+	}
+	return db, nil
+
+}
+
+func DbBuilder() *DbConfig {
+	return new(DbConfig)
+}
 func (db *DbConfig) WithName(name string) *DbConfig {
 	db.username = name
 	return db
-}
-
-// DbBuilder 建造者模式创建DbConfig
-func DbBuilder() *DbConfig {
-	return new(DbConfig)
 }
 func (db *DbConfig) WithPassword(password string) *DbConfig {
 	db.password = password
 	return db
 }
-
 func (db *DbConfig) WithPort(port int) *DbConfig {
 	db.port = port
 	return db
