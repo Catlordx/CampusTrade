@@ -9,9 +9,9 @@ type Server struct {
 	*gin.Engine
 }
 
-func NewServer() *Server {
+func New() *Server {
 	engine := gin.New()
-	engine.Use(gin.Recovery())
+	engine.Use(gin.Recovery(), gin.Logger())
 	router.InitRoutes(engine)
 	return &Server{Engine: engine}
 }
