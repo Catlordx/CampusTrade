@@ -41,3 +41,41 @@ type OrderItem struct {
 	UpdatedAt time.Time      `gorm:"not null"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
+
+// User 用户表模型
+type User struct {
+	gorm.Model
+	Username    string `gorm:"not null"`
+	RealName    string `gorm:"not null"`
+	Password    string `gorm:"not null"`
+	PhoneNumber string
+	RoleID      uint `gorm:"not null"`
+}
+
+/*
+// Role 角色表模型
+type Role struct {
+	ID   uint `gorm:"primaryKey;autoIncrement"`
+	Name string
+}
+
+// Permission 权限表模型
+type Permission struct {
+	ID   uint `gorm:"primaryKey;autoIncrement"`
+	Name string
+}
+
+// UserRole 用户角色关联表
+type UserRole struct {
+	ID     uint `gorm:"primaryKey;autoIncrement"`
+	UserID uint `gorm:"not null"`
+	RoleID uint `gorm:"not null"`
+}
+*/
+
+// RolePermission 角色权限关联表
+type RolePermission struct {
+	ID           uint `gorm:"primaryKey;autoIncrement"`
+	RoleID       uint `gorm:"not null"`
+	PermissionID uint `gorm:"not null"`
+}

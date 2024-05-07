@@ -6,6 +6,7 @@ Define mysql configuration
 package mysql
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
@@ -90,4 +91,20 @@ func (db *DbConfig) WithDBName(dbname string) *DbConfig {
 }
 func (db *DbConfig) Build() DbConfig {
 	return *db
+}
+
+func DB() (*gorm.DB, error) {
+	v := viper.New()
+	v.SetConfigFile("./configs/config.dev.toml")
+	var conf = DbConfig{}
+	conn, err := conf.LoadDbConfigFromViper(v)
+	if err != nil {
+		return nil, errors.New("failed to load config")
+	}
+
+	db, err := gorm.Open(mysql.Open(conn), &gorm.Config{})
+	if err != nil {
+		return nil, errors.New("failed to connect database")
+	}
+	return db, nil
 }
