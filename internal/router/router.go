@@ -1,6 +1,8 @@
 package router
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 func InitRoutes(r *gin.Engine) {
 	setProductRouter(r)
@@ -10,5 +12,7 @@ func InitRoutes(r *gin.Engine) {
 }
 
 func helloHandler(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "Hello World"})
+	//appContext := c.MustGet("appContext").(*core.AppContext)
+	//appContext.DB.First()
+	c.JSON(200, gin.H{"message": "Hello World", "demo": "Hello World"})
 }

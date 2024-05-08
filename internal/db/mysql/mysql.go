@@ -47,11 +47,11 @@ func (db *DbConfig) String() string {
 		db.dbname)
 }
 
-// Connect connect to the database and return database handle
+// Connect to the database and return database handle
 func Connect(instance *DbConfig) (*gorm.DB, error) {
-	profile_loc := "../../../configs/config.dev.toml"
+	profileLoc := "../../../configs/config.dev.toml"
 	v := viper.New()
-	v.SetConfigFile(profile_loc)
+	v.SetConfigFile(profileLoc)
 	dsn, err := instance.LoadDbConfigFromViper(v)
 	if err != nil {
 		log.Fatal("Unable to open the the database connection")

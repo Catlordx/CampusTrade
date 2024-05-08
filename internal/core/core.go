@@ -1,30 +1,19 @@
 package core
 
-type option struct {
-	disablePProf      bool
-	disableSwagger    bool
-	disablePrometheus bool
-	enableCors        bool
-}
-type Option func(*option)
+import (
+	"github.com/Catlordx/CampusTrade/internal/db/mysql"
+	"gorm.io/gorm"
+)
 
-func WithDisablePProf() Option {
-	return func(o *option) {
-		o.disablePProf = true
-	}
+type AppContext struct {
+	DB *gorm.DB
 }
-func WithDisableSwagger() Option {
-	return func(o *option) {
-		o.disableSwagger = true
+
+func NewAppContext() (*AppContext, error) {
+	conf := mysql.DbConfig{}
+	db, err := mysql.Connect(&conf)
+	if err != nil {
+		return nil, err
 	}
-}
-func WithDisablePrometheus() Option {
-	return func(o *option) {
-		o.disablePrometheus = true
-	}
-}
-func WithEnableCors() Option {
-	return func(o *option) {
-		o.enableCors = true
-	}
+	return &AppContext{DB: db}, nil
 }
