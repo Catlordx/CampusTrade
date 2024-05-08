@@ -24,7 +24,6 @@ type DbConfig struct {
 
 // LoadDbConfigFromViper return a connect string
 func (db *DbConfig) LoadDbConfigFromViper(v *viper.Viper) (string, error) {
-
 	if err := v.ReadInConfig(); err != nil {
 		return "", err
 	}
@@ -48,7 +47,7 @@ func (db *DbConfig) String() string {
 
 // Connect to the database and return database handle
 func Connect(instance *DbConfig) (*gorm.DB, error) {
-	profileLoc := "../../../configs/config.dev.toml"
+	profileLoc := "D:\\dev\\Go\\CampusTrade\\configs\\config.dev.toml"
 	v := viper.New()
 	v.SetConfigFile(profileLoc)
 	dsn, err := instance.LoadDbConfigFromViper(v)

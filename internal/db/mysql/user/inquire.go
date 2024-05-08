@@ -1,4 +1,4 @@
-package operation
+package user
 
 import (
 	"errors"

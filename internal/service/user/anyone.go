@@ -1,10 +1,10 @@
 package user
 
 import (
-	"github.com/Catlordx/CampusTrade/internal/core"
+	"github.com/Catlordx/CampusTrade/internal/core/config"
 	_ "github.com/Catlordx/CampusTrade/internal/db/mysql"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/permission"
-	"github.com/Catlordx/CampusTrade/internal/service/operation"
+	_user "github.com/Catlordx/CampusTrade/internal/db/mysql/user"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -17,9 +17,9 @@ func InquireAnyoneInfo(c *gin.Context) {
 	username := c.PostForm("username")
 	inquiredUsername := c.PostForm("inquired_username")
 
-	appContext := c.MustGet("appContext").(*core.AppContext)
+	appContext := c.MustGet("appContext").(*config.AppContext)
 
-	user := operation.User(appContext.DB, username)
+	user := _user.User(appContext.DB, username)
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "未找到用户信息",
@@ -27,14 +27,14 @@ func InquireAnyoneInfo(c *gin.Context) {
 		return
 	}
 
-	if operation.HasPermission(appContext.DB, username, permission.InquireAnyoneInfo) == false {
+	if _user.HasPermission(appContext.DB, username, permission.InquireAnyoneInfo) == false {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "用户不具有查询其他用户信息的权限",
 		})
 		return
 	}
 
-	inquiredUser := operation.User(appContext.DB, inquiredUsername)
+	inquiredUser := _user.User(appContext.DB, inquiredUsername)
 	if inquiredUser == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "未找到被修改用户的信息",
@@ -61,9 +61,9 @@ func ModifyAnyoneInfo(c *gin.Context) {
 	newPassword := c.PostForm("new_password")
 	newPhoneNumber := c.PostForm("new_phone_number")
 
-	appContext := c.MustGet("appContext").(*core.AppContext)
+	appContext := c.MustGet("appContext").(*config.AppContext)
 
-	user := operation.User(appContext.DB, username)
+	user := _user.User(appContext.DB, username)
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "未找到用户信息",
@@ -71,14 +71,14 @@ func ModifyAnyoneInfo(c *gin.Context) {
 		return
 	}
 
-	if operation.HasPermission(appContext.DB, username, permission.ModifyAnyoneInfo) == false {
+	if _user.HasPermission(appContext.DB, username, permission.ModifyAnyoneInfo) == false {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "用户不具有修改用户信息的权限",
 		})
 		return
 	}
 
-	result := operation.ModifyUser(appContext.DB, modifiedUser, newUsername, newRealName, newPassword, newPhoneNumber)
+	result := _user.ModifyUser(appContext.DB, modifiedUser, newUsername, newRealName, newPassword, newPhoneNumber)
 	if result == false {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "未找到被修改用户的信息",

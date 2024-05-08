@@ -1,9 +1,9 @@
 package user
 
 import (
-	"github.com/Catlordx/CampusTrade/internal/core"
+	"github.com/Catlordx/CampusTrade/internal/core/config"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/permission"
-	"github.com/Catlordx/CampusTrade/internal/service/operation"
+	_user "github.com/Catlordx/CampusTrade/internal/db/mysql/user"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -15,9 +15,9 @@ import (
 func InquireInfo(c *gin.Context) {
 	username := c.PostForm("username")
 
-	appContext := c.MustGet("appContext").(*core.AppContext)
+	appContext := c.MustGet("appContext").(*config.AppContext)
 
-	user := operation.User(appContext.DB, username)
+	user := _user.User(appContext.DB, username)
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "未找到用户信息",
@@ -25,7 +25,7 @@ func InquireInfo(c *gin.Context) {
 		return
 	}
 
-	if operation.HasPermission(appContext.DB, username, permission.InquireInfo) == false {
+	if _user.HasPermission(appContext.DB, username, permission.InquireInfo) == false {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "用户不具有查询自己信息的权限",
 		})
@@ -51,9 +51,9 @@ func ModifyInfo(c *gin.Context) {
 	newPassword := c.PostForm("new_password")
 	newPhoneNumber := c.PostForm("new_phone_number")
 
-	appContext := c.MustGet("appContext").(*core.AppContext)
+	appContext := c.MustGet("appContext").(*config.AppContext)
 
-	user := operation.User(appContext.DB, username)
+	user := _user.User(appContext.DB, username)
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "未找到用户信息",
@@ -61,14 +61,14 @@ func ModifyInfo(c *gin.Context) {
 		return
 	}
 
-	if operation.HasPermission(appContext.DB, username, permission.ModifyInfo) == false {
+	if _user.HasPermission(appContext.DB, username, permission.ModifyInfo) == false {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "用户不具有修改自己信息的权限",
 		})
 		return
 	}
 
-	operation.ModifyUser(appContext.DB, username, newUsername, newRealName, newPassword, newPhoneNumber)
+	_user.ModifyUser(appContext.DB, username, newUsername, newRealName, newPassword, newPhoneNumber)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "修改用户信息成功",
 	})
