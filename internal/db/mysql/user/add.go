@@ -1,4 +1,4 @@
-package operation
+package user
 
 import (
 	"github.com/Catlordx/CampusTrade/internal/db/mysql"
@@ -16,7 +16,7 @@ import (
 //	@param	role    	角色
 //	@return	bool		添加结果
 func AddUser(db *gorm.DB, username, realName, password, phoneNumber, role string) bool {
-	if user := User(db, username); user != nil {
+	if user := GetUserByUsername(db, username); user != nil {
 		return false
 	}
 	user := mysql.User{

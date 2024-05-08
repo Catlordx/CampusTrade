@@ -1,9 +1,10 @@
 package user
 
 import (
-	"github.com/Catlordx/CampusTrade/internal/core"
+	"github.com/Catlordx/CampusTrade/internal/core/config"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/permission"
-	"github.com/Catlordx/CampusTrade/internal/service/operation"
+	_user "github.com/Catlordx/CampusTrade/internal/db/mysql/user"
+	"github.com/Catlordx/CampusTrade/internal/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -13,11 +14,17 @@ import (
 //	@Description: 查询用户自己的信息，返回信息包括用户的真实名字、手机号和用户角色
 //	@param	c	*gin.Context
 func InquireInfo(c *gin.Context) {
-	username := c.PostForm("username")
+	claims, _ := c.Get("claims")
+	userClaims, ok := claims.(*utils.CustomClaims)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "claims类型错误",
+		})
+		return
+	}
 
-	appContext := c.MustGet("appContext").(*core.AppContext)
-
-	user := operation.User(appContext.DB, username)
+	appContext := c.MustGet("appContext").(*config.AppContext)
+	user := _user.GetUserByID(appContext.DB, userClaims.UserID)
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "未找到用户信息",
@@ -25,7 +32,7 @@ func InquireInfo(c *gin.Context) {
 		return
 	}
 
-	if operation.HasPermission(appContext.DB, username, permission.InquireInfo) == false {
+	if _user.HasPermission(appContext.DB, user.Username, permission.InquireInfo) == false {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "用户不具有查询自己信息的权限",
 		})
@@ -45,15 +52,21 @@ func InquireInfo(c *gin.Context) {
 //	@Description: 修改自己的用户信息
 //	@param	c	*gin.Context
 func ModifyInfo(c *gin.Context) {
-	username := c.PostForm("username")
+	claims, _ := c.Get("claims")
 	newUsername := c.PostForm("new_username")
 	newRealName := c.PostForm("new_real_name")
 	newPassword := c.PostForm("new_password")
 	newPhoneNumber := c.PostForm("new_phone_number")
+	userClaims, ok := claims.(*utils.CustomClaims)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "claims类型错误",
+		})
+		return
+	}
 
-	appContext := c.MustGet("appContext").(*core.AppContext)
-
-	user := operation.User(appContext.DB, username)
+	appContext := c.MustGet("appContext").(*config.AppContext)
+	user := _user.GetUserByID(appContext.DB, userClaims.UserID)
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "未找到用户信息",
@@ -61,14 +74,14 @@ func ModifyInfo(c *gin.Context) {
 		return
 	}
 
-	if operation.HasPermission(appContext.DB, username, permission.ModifyInfo) == false {
+	if _user.HasPermission(appContext.DB, user.Username, permission.ModifyInfo) == false {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "用户不具有修改自己信息的权限",
 		})
 		return
 	}
 
-	operation.ModifyUser(appContext.DB, username, newUsername, newRealName, newPassword, newPhoneNumber)
+	_user.ModifyUser(appContext.DB, user.Username, newUsername, newRealName, newPassword, newPhoneNumber)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "修改用户信息成功",
 	})
