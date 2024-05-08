@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"github.com/Catlordx/CampusTrade/internal/utils"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -12,6 +13,7 @@ func TestGenerateJWT(t *testing.T) {
 	role := "admin"
 	expectedExp := time.Now().Add(time.Hour * 24).Unix()
 	token, err := utils.GenerateToken(uint(userId), role)
+	fmt.Println(token)
 	require.NoError(t, err, "Generating JWT should not return an error")
 	require.NotEmpty(t, token, "Generated JWT should not be empty")
 	parsedToken, err := utils.VerifyToken(token)
