@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/Catlordx/CampusTrade/internal/core"
 	"github.com/Catlordx/CampusTrade/internal/service/operation"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -17,7 +18,9 @@ func Register(c *gin.Context) {
 	phoneNumber := c.PostForm("phone_number")
 	role := c.PostForm("role")
 
-	if operation.AddUser(db, username, realName, password, phoneNumber, role) == false {
+	appContext := c.MustGet("appContext").(*core.AppContext)
+
+	if operation.AddUser(appContext.DB, username, realName, password, phoneNumber, role) == false {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "用户已经存在",
 		})
@@ -37,7 +40,9 @@ func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 
-	user := operation.User(db, username)
+	appContext := c.MustGet("appContext").(*core.AppContext)
+
+	user := operation.User(appContext.DB, username)
 	if user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "用户不存在",
