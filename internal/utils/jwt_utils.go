@@ -67,13 +67,17 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": "Authorization header required",
 			})
+			c.Abort()
 			return
 		}
 
 		// 解析Authorization头格式
 		parts := strings.SplitN(authHeader, " ", 2)
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "Authorization header format must be Bearer {token}"})
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": "Authorization header format must be Bearer {token}",
+			})
+			c.Abort()
 			return
 		}
 
@@ -84,6 +88,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": "Invalid token",
 			})
+			c.Abort()
 			return
 		}
 
