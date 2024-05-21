@@ -6,13 +6,29 @@ import (
 	"gorm.io/gorm"
 )
 
-// User
+// GetUserByID
 //
-//	@Description: 查询用户
+//	@Description: 根据ID查询用户
+//	@param	db	数据库DB
+//	@param	ID	查询用户ID
+//	@return	*mysql.GetUserByUsername	用户结构体
+func GetUserByID(db *gorm.DB, ID uint) *mysql.User {
+	var user mysql.User
+	result := db.First(&user, ID)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil
+	}
+	return &user
+}
+
+// GetUserByUsername
+//
+//	@Description: 根据用户名查询用户
 //	@param	db			数据库DB
 //	@param	username	查询用户名
-//	@return	*mysql.User	用户结构体
-func User(db *gorm.DB, username string) *mysql.User {
+//	@return	*mysql.GetUserByUsername	用户结构体
+func GetUserByUsername(db *gorm.DB, username string) *mysql.User {
 	var user mysql.User
 	result := db.First(&user, "username = ?", username)
 
@@ -30,7 +46,7 @@ func User(db *gorm.DB, username string) *mysql.User {
 //	@param	permission	权限字符串
 //	@return	bool		查询结果
 func HasPermission(db *gorm.DB, username string, permission string) bool {
-	user := User(db, username)
+	user := GetUserByUsername(db, username)
 	if user == nil {
 		return false
 	}
