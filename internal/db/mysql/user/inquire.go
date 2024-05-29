@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -36,6 +37,20 @@ func GetUserByUsername(db *gorm.DB, username string) *mysql.User {
 		return nil
 	}
 	return &user
+}
+
+// CheckPassword
+//
+//	@Description: 检验输入密码是否与用户密码相同
+//	@param	userPassword	加密后的用户密码
+//	@param	password		输入密码
+//	@return	bool			判断结果
+func CheckPassword(userPassword []byte, password string) bool {
+	err := bcrypt.CompareHashAndPassword(userPassword, []byte(password))
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 // HasPermission

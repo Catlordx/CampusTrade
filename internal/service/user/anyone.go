@@ -16,7 +16,7 @@ import (
 //	@param	c	*gin.Context
 func InquireAnyoneInfo(c *gin.Context) {
 	claims, _ := c.Get("claims")
-	inquiredUsername := c.PostForm("inquired_username")
+	inquiredUsername := c.Query("inquired_username")
 	userClaims, ok := claims.(*utils.CustomClaims)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{
