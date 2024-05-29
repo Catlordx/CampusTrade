@@ -7,6 +7,7 @@ import (
 	"github.com/Catlordx/CampusTrade/internal/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // InquireInfo
