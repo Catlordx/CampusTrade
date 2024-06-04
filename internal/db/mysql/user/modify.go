@@ -1,6 +1,7 @@
 package user
 
 import (
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -79,7 +80,8 @@ func ModifyPassword(db *gorm.DB, username, newPassword string) bool {
 	if user == nil {
 		return false
 	}
-	db.Model(&user).Update("password", newPassword)
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	db.Model(&user).Update("password", hashedPassword)
 	return true
 }
 

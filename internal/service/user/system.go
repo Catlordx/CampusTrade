@@ -20,11 +20,18 @@ func Register(c *gin.Context) {
 	role := c.PostForm("role")
 
 	appContext := c.MustGet("appContext").(*config.AppContext)
-
-	if user.AddUser(appContext.DB, username, realName, password, phoneNumber, role) == false {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "用户已经存在",
-		})
+	err := user.AddUser(appContext.DB, username, realName, password, phoneNumber, role)
+	if err != nil {
+		switch err.Error() {
+		case "user already exists":
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "用户已经存在",
+			})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": err.Error(),
+			})
+		}
 		return
 	}
 
@@ -50,7 +57,7 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	if password != _user.Password {
+	if user.CheckPassword(_user.Password, password) == false {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "密码错误",
 		})

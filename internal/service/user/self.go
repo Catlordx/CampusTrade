@@ -2,11 +2,12 @@ package user
 
 import (
 	"github.com/Catlordx/CampusTrade/internal/core/config"
+	"github.com/Catlordx/CampusTrade/internal/db/mysql/commodity"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/permission"
 	_user "github.com/Catlordx/CampusTrade/internal/db/mysql/user"
-	"github.com/Catlordx/CampusTrade/internal/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // InquireInfo
@@ -14,28 +15,12 @@ import (
 //	@Description: 查询用户自己的信息，返回信息包括用户的真实名字、手机号和用户角色
 //	@param	c	*gin.Context
 func InquireInfo(c *gin.Context) {
-	claims, _ := c.Get("claims")
-	userClaims, ok := claims.(*utils.CustomClaims)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "claims类型错误",
-		})
-		return
-	}
-
-	appContext := c.MustGet("appContext").(*config.AppContext)
-	user := _user.GetUserByID(appContext.DB, userClaims.UserID)
+	user := GetUserFromClaims(c)
 	if user == nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "未找到用户信息",
-		})
 		return
 	}
 
-	if _user.HasPermission(appContext.DB, user.Username, permission.InquireInfo) == false {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "用户不具有查询自己信息的权限",
-		})
+	if CheckUserPermission(c, user.Role, permission.InquireInfo) == false {
 		return
 	}
 
@@ -52,37 +37,115 @@ func InquireInfo(c *gin.Context) {
 //	@Description: 修改自己的用户信息
 //	@param	c	*gin.Context
 func ModifyInfo(c *gin.Context) {
-	claims, _ := c.Get("claims")
+	user := GetUserFromClaims(c)
+	if user == nil {
+		return
+	}
+
+	if CheckUserPermission(c, user.Role, permission.ModifyInfo) == false {
+		return
+	}
+
 	newUsername := c.PostForm("new_username")
 	newRealName := c.PostForm("new_real_name")
 	newPassword := c.PostForm("new_password")
 	newPhoneNumber := c.PostForm("new_phone_number")
-	userClaims, ok := claims.(*utils.CustomClaims)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"message": "claims类型错误",
-		})
-		return
-	}
 
 	appContext := c.MustGet("appContext").(*config.AppContext)
-	user := _user.GetUserByID(appContext.DB, userClaims.UserID)
-	if user == nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "未找到用户信息",
-		})
-		return
-	}
-
-	if _user.HasPermission(appContext.DB, user.Username, permission.ModifyInfo) == false {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "用户不具有修改自己信息的权限",
-		})
-		return
-	}
-
 	_user.ModifyUser(appContext.DB, user.Username, newUsername, newRealName, newPassword, newPhoneNumber)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "修改用户信息成功",
 	})
+}
+
+// AddFavorite
+//
+//	@Description: 添加收藏商品
+//	@param	c
+func AddFavorite(c *gin.Context) {
+	user := GetUserFromClaims(c)
+	if user == nil {
+		return
+	}
+
+	if CheckUserPermission(c, user.Role, permission.OperateFavorite) == false {
+		return
+	}
+
+	favoriteID, _ := strconv.Atoi(c.PostForm("favorite_id"))
+
+	appContext := c.MustGet("appContext").(*config.AppContext)
+	result := commodity.AddFavorite(appContext.DB, user.ID, uint(favoriteID))
+	if result == false {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "商品已经收藏",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "商品收藏成功",
+	})
+}
+
+// RemoveFavorite
+//
+//	@Description: 移除收藏商品
+//	@param	c	*gin.Context
+func RemoveFavorite(c *gin.Context) {
+	user := GetUserFromClaims(c)
+	if user == nil {
+		return
+	}
+
+	if CheckUserPermission(c, user.Role, permission.OperateFavorite) == false {
+		return
+	}
+
+	appContext := c.MustGet("appContext").(*config.AppContext)
+
+	favoriteID, _ := strconv.Atoi(c.PostForm("favorite_id"))
+	result := commodity.RemoveFavorite(appContext.DB, user.ID, uint(favoriteID))
+	if result == false {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "商品未收藏",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "移除收藏成功",
+	})
+}
+
+// FavoriteList
+//
+//	@Description: 获取收藏商品列表
+//	@param	c	c.Context
+func FavoriteList(c *gin.Context) {
+	user := GetUserFromClaims(c)
+	if user == nil {
+		return
+	}
+
+	if CheckUserPermission(c, user.Role, permission.OperateFavorite) == false {
+		return
+	}
+
+	page, _ := strconv.Atoi(c.PostForm("page"))
+	count, _ := strconv.Atoi(c.PostForm("count"))
+
+	appContext := c.MustGet("appContext").(*config.AppContext)
+	commodityList :=
+		commodity.GetCommoditiesByID(
+			appContext.DB,
+			commodity.GetFavoriteIDs(
+				appContext.DB,
+				user.ID,
+				page,
+				count,
+			),
+		)
+
+	c.JSON(http.StatusOK, commodityList)
 }
