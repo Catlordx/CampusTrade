@@ -57,15 +57,11 @@ func CheckPassword(userPassword []byte, password string) bool {
 //
 //	@Description: 查询用户是否具有权限
 //	@param	db			数据库DB
-//	@param	username	用户名
+//	@param	role		角色名
 //	@param	permission	权限字符串
 //	@return	bool		查询结果
-func HasPermission(db *gorm.DB, username string, permission string) bool {
-	user := GetUserByUsername(db, username)
-	if user == nil {
-		return false
-	}
-	permissions := RolePermission(db, user.Role)
+func HasPermission(db *gorm.DB, role string, permission string) bool {
+	permissions := RolePermission(db, role)
 	for _, p := range permissions {
 		if p == permission {
 			return true
