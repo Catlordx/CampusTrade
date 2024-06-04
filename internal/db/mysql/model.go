@@ -59,9 +59,8 @@ type UserFavorite struct {
 // User 用户表模型
 type User struct {
 	gorm.Model
-	Username string `gorm:"not null"`
-	RealName string `gorm:"not null"`
-	//Password    string `gorm:"not null"`
+	Username    string `gorm:"not null"`
+	RealName    string `gorm:"not null"`
 	Password    []byte `gorm:"not null"`
 	PhoneNumber string
 	Role        string `gorm:"not null"`
