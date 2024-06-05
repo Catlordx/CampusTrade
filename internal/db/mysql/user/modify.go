@@ -1,6 +1,7 @@
 package user
 
 import (
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -15,7 +16,7 @@ import (
 //	@param	newPhoneNumber	新手机号
 //	@return	bool			修改结果
 func ModifyUser(db *gorm.DB, username, newUsername, newRealName, newPassword, newPhoneNumber string) bool {
-	user := User(db, username)
+	user := GetUserByUsername(db, username)
 	if user == nil {
 		return false
 	}
@@ -43,7 +44,7 @@ func ModifyUser(db *gorm.DB, username, newUsername, newRealName, newPassword, ne
 //	@param	newUsername	新用户名
 //	@return	bool		修改结果
 func ModifyUsername(db *gorm.DB, username, newUsername string) bool {
-	user := User(db, username)
+	user := GetUserByUsername(db, username)
 	if user == nil {
 		return false
 	}
@@ -59,7 +60,7 @@ func ModifyUsername(db *gorm.DB, username, newUsername string) bool {
 //	@param	newRealName	新真实姓名
 //	@return	bool		修改结果
 func ModifyRealName(db *gorm.DB, username, newRealName string) bool {
-	user := User(db, username)
+	user := GetUserByUsername(db, username)
 	if user == nil {
 		return false
 	}
@@ -75,11 +76,12 @@ func ModifyRealName(db *gorm.DB, username, newRealName string) bool {
 //	@param	newPassword	新密码
 //	@return	bool		修改结果
 func ModifyPassword(db *gorm.DB, username, newPassword string) bool {
-	user := User(db, username)
+	user := GetUserByUsername(db, username)
 	if user == nil {
 		return false
 	}
-	db.Model(&user).Update("password", newPassword)
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	db.Model(&user).Update("password", hashedPassword)
 	return true
 }
 
@@ -91,7 +93,7 @@ func ModifyPassword(db *gorm.DB, username, newPassword string) bool {
 //	@param	newPhoneNumber	新手机号
 //	@return	bool			修改结果
 func ModifyPhoneNumber(db *gorm.DB, username, newPhoneNumber string) bool {
-	user := User(db, username)
+	user := GetUserByUsername(db, username)
 	if user == nil {
 		return false
 	}

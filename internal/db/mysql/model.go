@@ -42,12 +42,26 @@ type OrderItem struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
+// CommodityKind 商品种类表
+type CommodityKind struct {
+	ID          uint   `gorm:"primaryKey;autoIncrement"`
+	CommodityID uint   `gorm:"not null"`
+	Kind        string `gorm:"not null"`
+}
+
+// UserFavorite 用户收藏商品表
+type UserFavorite struct {
+	ID          uint `gorm:"primaryKey;autoIncrement"`
+	UserID      uint `gorm:"not null"`
+	CommodityID uint `gorm:"not null"`
+}
+
 // User 用户表模型
 type User struct {
 	gorm.Model
 	Username    string `gorm:"not null"`
 	RealName    string `gorm:"not null"`
-	Password    string `gorm:"not null"`
+	Password    []byte `gorm:"not null"`
 	PhoneNumber string
 	Role        string `gorm:"not null"`
 }

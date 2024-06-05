@@ -3,6 +3,7 @@ package user
 import (
 	"github.com/Catlordx/CampusTrade/internal/core/config"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/user"
+	"github.com/Catlordx/CampusTrade/internal/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -19,11 +20,18 @@ func Register(c *gin.Context) {
 	role := c.PostForm("role")
 
 	appContext := c.MustGet("appContext").(*config.AppContext)
-
-	if user.AddUser(appContext.DB, username, realName, password, phoneNumber, role) == false {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "用户已经存在",
-		})
+	err := user.AddUser(appContext.DB, username, realName, password, phoneNumber, role)
+	if err != nil {
+		switch err.Error() {
+		case "user already exists":
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "用户已经存在",
+			})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": err.Error(),
+			})
+		}
 		return
 	}
 
@@ -42,18 +50,29 @@ func Login(c *gin.Context) {
 
 	appContext := c.MustGet("appContext").(*config.AppContext)
 
-	_user := user.User(appContext.DB, username)
+	_user := user.GetUserByUsername(appContext.DB, username)
 	if _user == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "用户不存在",
 		})
-	} else if password != _user.Password {
+		return
+	}
+	if user.CheckPassword(_user.Password, password) == false {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "密码错误",
 		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "登录成功",
-		})
+		return
 	}
+
+	token, err := utils.GenerateToken(_user.ID, _user.Role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to generate token",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "登录成功",
+		"token":   token,
+	})
 }

@@ -14,27 +14,19 @@ import (
 //	@Description: 查询其他用户信息，返回信息包括用户手机号和用户角色
 //	@param	c	*gin.Context
 func InquireAnyoneInfo(c *gin.Context) {
-	username := c.PostForm("username")
-	inquiredUsername := c.PostForm("inquired_username")
+	user := GetUserFromClaims(c)
+	if user == nil {
+		return
+	}
+
+	if CheckUserPermission(c, user.Role, permission.InquireAnyoneInfo) == false {
+		return
+	}
+
+	inquiredUsername := c.Query("inquired_username")
 
 	appContext := c.MustGet("appContext").(*config.AppContext)
-
-	user := _user.User(appContext.DB, username)
-	if user == nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "未找到用户信息",
-		})
-		return
-	}
-
-	if _user.HasPermission(appContext.DB, username, permission.InquireAnyoneInfo) == false {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "用户不具有查询其他用户信息的权限",
-		})
-		return
-	}
-
-	inquiredUser := _user.User(appContext.DB, inquiredUsername)
+	inquiredUser := _user.GetUserByUsername(appContext.DB, inquiredUsername)
 	if inquiredUser == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "未找到被修改用户的信息",
@@ -54,7 +46,15 @@ func InquireAnyoneInfo(c *gin.Context) {
 //	@Description: 修改其他用户信息，
 //	@param	c	*c.ginContext
 func ModifyAnyoneInfo(c *gin.Context) {
-	username := c.PostForm("username")
+	user := GetUserFromClaims(c)
+	if user == nil {
+		return
+	}
+
+	if CheckUserPermission(c, user.Role, permission.ModifyAnyoneInfo) == false {
+		return
+	}
+
 	modifiedUser := c.PostForm("modified_user")
 	newUsername := c.PostForm("new_username")
 	newRealName := c.PostForm("new_real_name")
@@ -62,22 +62,6 @@ func ModifyAnyoneInfo(c *gin.Context) {
 	newPhoneNumber := c.PostForm("new_phone_number")
 
 	appContext := c.MustGet("appContext").(*config.AppContext)
-
-	user := _user.User(appContext.DB, username)
-	if user == nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "未找到用户信息",
-		})
-		return
-	}
-
-	if _user.HasPermission(appContext.DB, username, permission.ModifyAnyoneInfo) == false {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "用户不具有修改用户信息的权限",
-		})
-		return
-	}
-
 	result := _user.ModifyUser(appContext.DB, modifiedUser, newUsername, newRealName, newPassword, newPhoneNumber)
 	if result == false {
 		c.JSON(http.StatusBadRequest, gin.H{
