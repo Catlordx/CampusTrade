@@ -1,13 +1,14 @@
 package test
 
 import (
+	"fmt"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/commodity"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
-func TestCommodityList(t *testing.T) {
+func TestCommodityIDList(t *testing.T) {
 	conf := mysql.DbConfig{}
 	db, err := mysql.Connect(&conf)
 	if err != nil {
@@ -47,4 +48,23 @@ func TestCommodityList(t *testing.T) {
 	commoditiesKind2 := commodity.GetCommodityIDsByKind(db, "testKind2", 1, 10)
 	require.Len(t, commoditiesKind2, 0, "commoditiesKind2 should have 0 elements")
 
+}
+
+func TestCommodityListByID(t *testing.T) {
+	conf := mysql.DbConfig{}
+	db, err := mysql.Connect(&conf)
+	if err != nil {
+		t.Fatalf("Failed to load DB config from viper: %v", err)
+	}
+	err = db.AutoMigrate(&mysql.Commodity{}, &mysql.CommodityKind{})
+
+	commodityIDs1 := commodity.GetCommodityIDsByKind(db, "", 1, 10)
+	require.NotZero(t, len(commodityIDs1), "expected commodities1 to be non-empty")
+
+	commodities1 := commodity.GetCommoditiesByID(db, commodityIDs1)
+	require.NotZero(t, len(commodities1), "expected commodities1 to be non-empty")
+
+	for id, _commodity := range commodities1 {
+		fmt.Printf("%d %v\n", id, _commodity.Name)
+	}
 }
