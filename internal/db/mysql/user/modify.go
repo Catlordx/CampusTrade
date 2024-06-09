@@ -16,7 +16,7 @@ import (
 //	@param	newPhoneNumber	新手机号
 //	@return	bool			修改结果
 func ModifyUser(db *gorm.DB, username, newUsername, newRealName, newPassword, newPhoneNumber string) bool {
-	if newUsername == "" {
+	if username == "" {
 		return false
 	}
 	user := GetUserByUsername(db, username)
