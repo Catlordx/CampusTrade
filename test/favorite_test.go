@@ -13,14 +13,16 @@ func TestAddFavorite(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to load DB config from viper: %v", err)
 	}
-	err = db.AutoMigrate(&mysql.UserFavorite{})
+	err = db.AutoMigrate(&mysql.UserFavorite{}, &mysql.Commodity{})
 
 	var userID uint = 1
-	var favoriteID uint = 1
-	result := commodity.AddFavorite(db, userID, favoriteID)
-	require.True(t, result, "add favorite failed")
-	result = commodity.AddFavorite(db, userID, favoriteID)
-	require.False(t, result, "favorite should have be added")
+	var favoriteID uint = 1001
+	err = commodity.AddFavorite(db, userID, favoriteID)
+	require.NoError(t, err, "add favorite failed")
+	err = commodity.AddFavorite(db, userID, favoriteID)
+	require.Error(t, err, "favorite should have be added")
+	err = commodity.AddFavorite(db, userID, 999999)
+	require.Error(t, err, "commodity doesn't exist")
 }
 
 func TestRemoveFavorite(t *testing.T) {
@@ -32,7 +34,7 @@ func TestRemoveFavorite(t *testing.T) {
 	err = db.AutoMigrate(&mysql.UserFavorite{})
 
 	var userID uint = 1
-	var favoriteID uint = 1
+	var favoriteID uint = 1001
 	result := commodity.RemoveFavorite(db, userID, favoriteID)
 	require.True(t, result, "remove favorite failed")
 	result = commodity.RemoveFavorite(db, userID, favoriteID)
@@ -47,10 +49,10 @@ func TestGetFavorites(t *testing.T) {
 	}
 	err = db.AutoMigrate(&mysql.UserFavorite{})
 
-	commodity.AddFavorite(db, 1, 1)
-	commodity.AddFavorite(db, 1, 2)
-	defer commodity.RemoveFavorite(db, 1, 1)
-	defer commodity.RemoveFavorite(db, 1, 2)
+	_ = commodity.AddFavorite(db, 1, 1001)
+	_ = commodity.AddFavorite(db, 1, 1002)
+	defer commodity.RemoveFavorite(db, 1, 1001)
+	defer commodity.RemoveFavorite(db, 1, 1002)
 
 	user1Favorites1 := commodity.GetFavoriteIDs(db, 1, 1, 10)
 	require.NotZero(t, len(user1Favorites1), "expected commodities1 to be non-empty")

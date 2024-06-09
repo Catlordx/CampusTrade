@@ -12,14 +12,19 @@ import (
 //	@param	db			数据库DB
 //	@param	userID		用户UI
 //	@param	favoriteID	收藏商品UI
-//	@return	bool		添加结果
-func AddFavorite(db *gorm.DB, userID, favoriteID uint) bool {
+//	@return	error		添加结果
+func AddFavorite(db *gorm.DB, userID, favoriteID uint) error {
+	//检查商品是否存在
+	commodity := GetCommoditiesByID(db, []uint{favoriteID})
+	if len(commodity) == 0 {
+		return errors.New("commodity not found")
+	}
 	//判断商品是否已经被收藏
 	result := db.Model(mysql.UserFavorite{}).
 		Where("user_id = ? AND commodity_id = ?", userID, favoriteID).
 		First(&mysql.UserFavorite{})
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) == false {
-		return false
+		return errors.New("commodity already be in favorite")
 	}
 
 	favorite := mysql.UserFavorite{
@@ -27,7 +32,7 @@ func AddFavorite(db *gorm.DB, userID, favoriteID uint) bool {
 		CommodityID: favoriteID,
 	}
 	db.Create(&favorite)
-	return true
+	return nil
 }
 
 // RemoveFavorite

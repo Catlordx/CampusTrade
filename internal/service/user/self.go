@@ -75,11 +75,18 @@ func AddFavorite(c *gin.Context) {
 	favoriteID, _ := strconv.Atoi(c.PostForm("favorite_id"))
 
 	appContext := c.MustGet("appContext").(*config.AppContext)
-	result := commodity.AddFavorite(appContext.DB, user.ID, uint(favoriteID))
-	if result == false {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "商品已经收藏",
-		})
+	err := commodity.AddFavorite(appContext.DB, user.ID, uint(favoriteID))
+	if err != nil {
+		switch err.Error() {
+		case "commodity not found":
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "商品不存在",
+			})
+		case "commodity already be in favorite":
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "商品已经被收藏",
+			})
+		}
 		return
 	}
 

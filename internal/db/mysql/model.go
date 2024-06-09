@@ -60,7 +60,7 @@ type UserFavorite struct {
 type User struct {
 	gorm.Model
 	Username    string `gorm:"not null"`
-	RealName    string `gorm:"not null"`
+	RealName    string
 	Password    []byte `gorm:"not null"`
 	PhoneNumber string
 	Role        string `gorm:"not null"`

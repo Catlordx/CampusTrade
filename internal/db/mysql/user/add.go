@@ -18,6 +18,15 @@ import (
 //	@param	role    	角色
 //	@return	error		添加结果
 func AddUser(db *gorm.DB, username, realName, password, phoneNumber, role string) error {
+	if username == "" {
+		return errors.New("username can't be empty")
+	}
+	if password == "" {
+		return errors.New("password can't be empty")
+	}
+	if role == "" {
+		return errors.New("role can't be empty")
+	}
 	if user := GetUserByUsername(db, username); user != nil {
 		return errors.New("user already exists")
 	}

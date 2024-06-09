@@ -61,6 +61,9 @@ func CheckPassword(userPassword []byte, password string) bool {
 //	@param	permission	权限字符串
 //	@return	bool		查询结果
 func HasPermission(db *gorm.DB, role string, permission string) bool {
+	if role == "" || permission == "" {
+		return false
+	}
 	permissions := RolePermission(db, role)
 	for _, p := range permissions {
 		if p == permission {
@@ -77,6 +80,9 @@ func HasPermission(db *gorm.DB, role string, permission string) bool {
 //	@param	role		角色ID
 //	@return	[]string	权限切片
 func RolePermission(db *gorm.DB, role string) []string {
+	if role == "" {
+		return []string{}
+	}
 	var permissions []string
 	db.Model(&mysql.RolePermission{}).Where("role = ?", role).Pluck("permission", &permissions)
 	if len(permissions) == 0 {

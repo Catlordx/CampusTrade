@@ -67,4 +67,12 @@ func TestCommodityListByID(t *testing.T) {
 	for id, _commodity := range commodities1 {
 		fmt.Printf("%d %v\n", id, _commodity.Name)
 	}
+
+	var commodityIDs2 = []uint{10000, 10001}
+	commodities2 := commodity.GetCommoditiesByID(db, commodityIDs2)
+	require.Zero(t, len(commodities2), "expected commodities1 to be empty")
+
+	for id, _commodity := range commodities2 {
+		fmt.Printf("%d %v\n", id, _commodity.Name)
+	}
 }
