@@ -10,9 +10,9 @@ import (
 // GetUserByID
 //
 //	@Description: 根据ID查询用户
-//	@param	db	数据库DB
-//	@param	ID	查询用户ID
-//	@return	*mysql.GetUserByUsername	用户结构体
+//	@param	db			数据库DB
+//	@param	ID			查询用户ID
+//	@return	*mysql.USer	用户结构体
 func GetUserByID(db *gorm.DB, ID uint) *mysql.User {
 	var user mysql.User
 	result := db.First(&user, ID)
@@ -28,7 +28,7 @@ func GetUserByID(db *gorm.DB, ID uint) *mysql.User {
 //	@Description: 根据用户名查询用户
 //	@param	db			数据库DB
 //	@param	username	查询用户名
-//	@return	*mysql.GetUserByUsername	用户结构体
+//	@return	*mysql.User	用户结构体
 func GetUserByUsername(db *gorm.DB, username string) *mysql.User {
 	var user mysql.User
 	result := db.First(&user, "username = ?", username)
@@ -60,13 +60,10 @@ func CheckPassword(userPassword []byte, password string) bool {
 //	@param	role		角色名
 //	@param	permission	权限字符串
 //	@return	bool		查询结果
-func HasPermission(db *gorm.DB, role string, permission string) bool {
-	if role == "" || permission == "" {
-		return false
-	}
-	permissions := RolePermission(db, role)
-	for _, p := range permissions {
-		if p == permission {
+func HasPermission(db *gorm.DB, user *mysql.User, userPermission string) bool {
+	permissions := RolePermission(db, user.Role)
+	for _, permission := range permissions {
+		if permission == userPermission {
 			return true
 		}
 	}

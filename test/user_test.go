@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/role"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/user"
@@ -27,9 +28,9 @@ func TestAddUser(t *testing.T) {
 		testUser1Role)
 	if err != nil {
 		if err.Error() == "user already exists" {
-			t.Errorf("User already exists")
+			t.Errorf("user already exists")
 		} else {
-			t.Errorf("password should be valid")
+			t.Errorf("unknown error: %s", err.Error())
 		}
 	}
 
@@ -39,22 +40,10 @@ func TestAddUser(t *testing.T) {
 		testUser1Password,
 		testUser1PhoneNumber,
 		testUser1Role)
-	require.Error(t, err, "An error was expected but got nil")
+	require.Error(t, err, "user should be added")
 
-	err = user.AddUser(db,
-		"test_user2",
-		"",
-		"123456",
-		"",
-		role.User)
-	require.NoError(t, err, "an error should be nil")
-
-	err = user.AddUser(db, "", "", "", "", "")
-	require.Error(t, err, "An error was expected but got nil")
-	err = user.AddUser(db, "test_user3", "", "", "", "")
-	require.Error(t, err, "An error was expected but got nil")
-	err = user.AddUser(db, "test_user4", "", "123456", "", "")
-	require.Error(t, err, "An error was expected but got nil")
+	testUser1 := user.GetUserByUsername(db, testUser1Username)
+	db.Unscoped().Delete(&testUser1)
 }
 
 func TestModifyUser(t *testing.T) {
@@ -62,42 +51,42 @@ func TestModifyUser(t *testing.T) {
 	db, _ := mysql.Connect(&conf)
 
 	_ = db.AutoMigrate(&mysql.User{})
+	_ = user.AddUser(db,
+		"test_user1",
+		"TestUser1",
+		"123456",
+		"12312341234",
+		role.User)
 
 	testUser1 := user.GetUserByUsername(db, "test_user1")
-	testUser1id := testUser1.ID
-	testUser1Username := testUser1.Username
-	testUser1RealName := testUser1.RealName
-	testUser1Password := testUser1.Password
-	testUser1PhoneNumber := testUser1.PhoneNumber
+	fmt.Printf("%v\t%v\t%v\t%v\n", testUser1.Username, testUser1.RealName, testUser1.PhoneNumber, testUser1.Password)
+	testUser1ID := testUser1.ID
 
-	user.ModifyUser(db, testUser1Username, "", "", "", "")
-	_testUser1 := user.GetUserByID(db, testUser1id)
-	require.Equal(t, _testUser1.Username, testUser1Username, "test_user1's username shouldn't be changed")
-	require.Equal(t, _testUser1.RealName, testUser1RealName, "test_user1's real name shouldn't be changed")
-	require.Equal(t, string(_testUser1.Password), string(testUser1Password), "test_user1's password shouldn't changed")
-	require.Equal(t, _testUser1.PhoneNumber, testUser1PhoneNumber, "test_user1's phone number shouldn't be changed")
+	err := user.ModifyUsername(db, testUser1ID, "test_user1")
+	require.Error(t, err, "new username is the same as old username, user should not be modified")
+	err = user.ModifyUsername(db, testUser1ID, "test_user1.0")
+	require.NoError(t, err, "user should be modified")
+	testUser1 = user.GetUserByID(db, testUser1ID)
+	fmt.Printf("%v\t%v\t%v\t%v\n", testUser1.Username, testUser1.RealName, testUser1.PhoneNumber, testUser1.Password)
 
-	user.ModifyUser(db,
-		"test_user1",
-		"test_user1.0",
-		"TestUser1",
-		"abcdef",
-		"12345678910")
-	testUser10 := user.GetUserByID(db, testUser1id)
+	err = user.ModifyRealName(db, testUser1ID, "TestUser1")
+	require.Error(t, err, "new real name is the same as old real name, user should not be modified")
+	err = user.ModifyRealName(db, testUser1ID, "TestUser1.0")
+	require.NoError(t, err, "user should be modified")
+	testUser1 = user.GetUserByID(db, testUser1ID)
+	fmt.Printf("%v\t%v\t%v\t%v\n", testUser1.Username, testUser1.RealName, testUser1.PhoneNumber, testUser1.Password)
 
-	require.Equal(t, testUser10.Username, "test_user1.0", "test_user1's username doesn't be changed")
-	require.Equal(t, testUser10.RealName, "TestUser1", "test_user1's real name doesn't be changed")
-	require.True(t, user.CheckPassword(testUser10.Password, "abcdef"), "test_user1's password doesn't be changed")
-	require.Equal(t, testUser10.PhoneNumber, "12345678910", "test_user1's phone number doesn't be changed")
-	user.ModifyUser(db,
-		testUser10.Username,
-		testUser1Username,
-		testUser1RealName,
-		"123456",
-		testUser1PhoneNumber)
+	err = user.ModifyPhoneNumber(db, testUser1ID, "12312341234")
+	require.Error(t, err, "new phone number is the same as old phone number, user should not be modified")
+	err = user.ModifyPhoneNumber(db, testUser1ID, "9879869876")
+	require.NoError(t, err, "user should be modified")
+	testUser1 = user.GetUserByID(db, testUser1ID)
+	fmt.Printf("%v\t%v\t%v\t%v\n", testUser1.Username, testUser1.RealName, testUser1.PhoneNumber, testUser1.Password)
 
-	result := user.ModifyUser(db, "", "", "", "", "")
-	require.False(t, result, "username is empty, should not be changed")
-	result = user.ModifyUser(db, "no_user", "", "", "", "")
-	require.False(t, result, "username is empty, should not be changed")
+	err = user.ModifyPassword(db, testUser1ID, "123456")
+	require.Error(t, err, "new password is the same as old password, user should not be modified")
+	err = user.ModifyPassword(db, testUser1ID, "asdfgh")
+	require.NoError(t, err, "user should be modified")
+	testUser1 = user.GetUserByID(db, testUser1ID)
+	fmt.Printf("%v\t%v\t%v\t%v\n", testUser1.Username, testUser1.RealName, testUser1.PhoneNumber, testUser1.Password)
 }

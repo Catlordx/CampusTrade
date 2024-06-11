@@ -2,6 +2,7 @@ package user
 
 import (
 	"github.com/Catlordx/CampusTrade/internal/core/config"
+	"github.com/Catlordx/CampusTrade/internal/db/mysql/role"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/user"
 	"github.com/Catlordx/CampusTrade/internal/utils"
 	"github.com/gin-gonic/gin"
@@ -11,7 +12,6 @@ import (
 type userInfo struct {
 	Username string `json:"username" form:"username"`
 	Password string `json:"password" form:"password"`
-	Role     string `json:"role" form:"role"`
 }
 
 // Register
@@ -26,15 +26,10 @@ func Register(c *gin.Context) {
 	}
 
 	appContext := c.MustGet("appContext").(*config.AppContext)
-	err = user.AddUser(appContext.DB, _userInfo.Username, "", _userInfo.Password, "", _userInfo.Role)
+	//注册默认为user角色
+	err = user.AddUser(appContext.DB, _userInfo.Username, "", _userInfo.Password, "", role.User)
 	if err != nil {
 		switch err.Error() {
-		case "username can't be empty":
-			c.JSON(http.StatusBadRequest, gin.H{"message": "请输入用户名"})
-		case "password can't be empty":
-			c.JSON(http.StatusBadRequest, gin.H{"message": "请输入密码"})
-		case "role can't be empty":
-			c.JSON(http.StatusBadRequest, gin.H{"message": "请输入用户角色"})
 		case "user already exists":
 			c.JSON(http.StatusBadRequest, gin.H{"message": "用户已经存在"})
 		default:

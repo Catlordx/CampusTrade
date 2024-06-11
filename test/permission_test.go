@@ -42,21 +42,23 @@ func TestHasPermission(t *testing.T) {
 	}
 	err = db.AutoMigrate(&mysql.RolePermission{})
 
-	result := user.HasPermission(db, role.User, permission.InquireInfo)
-	require.True(t, result, "role of user should have the permission")
+	_ = user.AddUser(db, "test_user1", "", "", "", role.User)
+	_ = user.AddUser(db, "test_user2", "", "", "", role.Admin)
+	testUser1 := user.GetUserByUsername(db, "test_user1")
+	testUser2 := user.GetUserByUsername(db, "test_user2")
+	defer func() { db.Unscoped().Delete(&testUser1) }()
+	defer func() { db.Unscoped().Delete(&testUser2) }()
 
-	result = user.HasPermission(db, role.User, permission.ModifyAnyoneInfo)
-	require.False(t, result, "role of user should not have the permission")
+	result := user.HasPermission(db, testUser1, permission.InquireInfo)
+	require.True(t, result, "role of user should have inquire_info permission")
 
-	result = user.HasPermission(db, role.Admin, permission.OperateFavorite)
+	result = user.HasPermission(db, testUser1, permission.ModifyAnyoneInfo)
+	require.False(t, result, "role of user should not have modify_anyone_info permission")
+
+	result = user.HasPermission(db, testUser2, permission.OperateFavorite)
 	require.False(t, result, "role of admin should not have the permission")
 
-	result = user.HasPermission(db, role.User, "test_permission")
+	result = user.HasPermission(db, testUser1, "test_permission")
 	require.False(t, result, "role of user should not have the permission")
 
-	result = user.HasPermission(db, "", permission.InquireInfo)
-	require.False(t, result, "empty role should not have the permission")
-
-	result = user.HasPermission(db, role.User, "")
-	require.False(t, result, "empty role should not have empty permission")
 }

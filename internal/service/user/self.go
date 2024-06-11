@@ -4,10 +4,10 @@ import (
 	"github.com/Catlordx/CampusTrade/internal/core/config"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/commodity"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/permission"
-	_user "github.com/Catlordx/CampusTrade/internal/db/mysql/user"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 // InquireInfo
@@ -20,7 +20,7 @@ func InquireInfo(c *gin.Context) {
 		return
 	}
 
-	if CheckUserPermission(c, user.Role, permission.InquireInfo) == false {
+	if CheckUserPermission(c, user, permission.InquireInfo) == false {
 		return
 	}
 
@@ -42,7 +42,7 @@ func ModifyInfo(c *gin.Context) {
 		return
 	}
 
-	if CheckUserPermission(c, user.Role, permission.ModifyInfo) == false {
+	if CheckUserPermission(c, user, permission.ModifyInfo) == false {
 		return
 	}
 
@@ -51,11 +51,7 @@ func ModifyInfo(c *gin.Context) {
 	newPassword := c.PostForm("new_password")
 	newPhoneNumber := c.PostForm("new_phone_number")
 
-	appContext := c.MustGet("appContext").(*config.AppContext)
-	_user.ModifyUser(appContext.DB, user.Username, newUsername, newRealName, newPassword, newPhoneNumber)
-	c.JSON(http.StatusOK, gin.H{
-		"message": "修改用户信息成功",
-	})
+	CheckModifyUser(c, user.ID, newUsername, newRealName, newPassword, newPhoneNumber)
 }
 
 // AddFavorite
@@ -68,7 +64,7 @@ func AddFavorite(c *gin.Context) {
 		return
 	}
 
-	if CheckUserPermission(c, user.Role, permission.OperateFavorite) == false {
+	if CheckUserPermission(c, user, permission.OperateFavorite) == false {
 		return
 	}
 
@@ -105,7 +101,7 @@ func RemoveFavorite(c *gin.Context) {
 		return
 	}
 
-	if CheckUserPermission(c, user.Role, permission.OperateFavorite) == false {
+	if CheckUserPermission(c, user, permission.OperateFavorite) == false {
 		return
 	}
 
@@ -135,24 +131,31 @@ func FavoriteList(c *gin.Context) {
 		return
 	}
 
-	if CheckUserPermission(c, user.Role, permission.OperateFavorite) == false {
+	if CheckUserPermission(c, user, permission.OperateFavorite) == false {
 		return
 	}
 
+	sort := c.PostForm("count")
+	reverseStr := c.PostForm("reverse")
 	page, _ := strconv.Atoi(c.PostForm("page"))
 	count, _ := strconv.Atoi(c.PostForm("count"))
 
+	var reverse bool
+	if strings.ToLower(reverseStr) == "asc" || strings.ToLower(reverseStr) == "" { //默认升序
+		reverse = false
+	} else if strings.ToLower(reverseStr) == "desc" {
+		reverse = true
+	}
+
 	appContext := c.MustGet("appContext").(*config.AppContext)
 	commodityList :=
-		commodity.GetCommoditiesByID(
+		commodity.GetFavorites(
 			appContext.DB,
-			commodity.GetFavoriteIDs(
-				appContext.DB,
-				user.ID,
-				page,
-				count,
-			),
-		)
+			user.ID,
+			sort,
+			reverse,
+			page,
+			count)
 
 	c.JSON(http.StatusOK, commodityList)
 }
