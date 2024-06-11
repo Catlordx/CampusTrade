@@ -2,6 +2,7 @@ package core
 
 import (
 	"github.com/Catlordx/CampusTrade/internal/router"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +16,12 @@ func New() *Server {
 		panic("Failed to create app context: " + err.Error())
 	}
 	engine := gin.New()
+
+	//BUG 跨域策略最后需要删掉！
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type"}
+	engine.Use(cors.New(corsConfig))
 	engine.Use(gin.Recovery(), gin.Logger())
 	engine.Use(func(context *gin.Context) {
 		context.Set("appContext", appContext)

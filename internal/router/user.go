@@ -1,8 +1,8 @@
 package router
 
 import (
+	"github.com/Catlordx/CampusTrade/internal/middleware"
 	"github.com/Catlordx/CampusTrade/internal/service/user"
-	"github.com/Catlordx/CampusTrade/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +14,7 @@ func setUserRouter(r *gin.Engine) {
 		// TODO 用户登录
 		userGroup.POST("/login", user.Login)
 
-		userGroup.Use(utils.AuthMiddleware())
+		userGroup.Use(middleware.Authenticate())
 		{
 			// TODO 获得用户信息
 			userGroup.GET("/profile/info", user.InquireInfo)
