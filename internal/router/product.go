@@ -14,6 +14,6 @@ func setProductRouter(r *gin.Engine) {
 		productGroup.PUT("/:productId")
 
 		// TODO 获取商品分页列表
-		productGroup.GET("/list/:kind/:sort/:reverse/:page/:count", _product.CommodityListByLike)
+		productGroup.POST("/list", _product.CommodityListByLike)
 	}
 }

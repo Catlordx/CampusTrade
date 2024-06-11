@@ -4,25 +4,16 @@ import (
 	"errors"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql"
 	"gorm.io/gorm"
+	"strings"
 )
 
-/*
-// GetCommoditiesByID
-//
-//	@Description: 根据商品ID获取商品结构体切片
-//	@param	db					数据库DB
-//	@param	commodityIDs		商品ID切片
-//	@return	[]mysql.Commodity	商品结构体切片
-func GetCommoditiesByID(db *gorm.DB, commodityIDs []uint) []mysql.Commodity {
-	var commodities []mysql.Commodity
-
-	db.Model(mysql.Commodity{}).
-		//Where("deleted_at IS NOT NULL").
-		Where("id IN (?)", commodityIDs).
-		Find(&commodities)
-
-	return commodities
-}*/
+type CommoditiesInfo struct {
+	Kind    string `json:"kind"`    //列表按照kind进行分类，kind为空字符串时表示不分类，即从所有商品中寻找
+	Sort    string `json:"sort"`    //列表按照sort的值进行排序，sort为空字符串时默认按照ID排序
+	Reverse string `json:"reverse"` //排序规则，ASC升序，DESC降序
+	Page    int    `json:"page"`    //第page页
+	Count   int    `json:"count"`   //每页商品个数
+}
 
 // GetCommodityByID
 //
@@ -42,26 +33,22 @@ func GetCommodityByID(db *gorm.DB, ID uint) *mysql.Commodity {
 
 // GetCommoditiesByKind
 //
-//	@Description: 获取商品分类分页列表，该列表按照sort的值进行排序
+//	@Description: 获取商品分类分页排序列表
 //	@param	db					数据库DB
-//	@param	kind				列表按照kind进行分类，kind为空字符串时表示不分类，即从所有商品中寻找
-//	@param	sort				列表按照sort的值进行排序，sort为空字符串时默认按照ID排序
-//	@param	reverse				排序规则，true降序排列，false升序排列
-//	@param	page				第page页
-//	@param	count				每页商品个数
-//	@return	[]mysql.Commodity	商品列表
-func GetCommoditiesByKind(db *gorm.DB, kind, sort string, reverse bool, page, count int) []mysql.Commodity {
+//	@param	listInfo			商品列表的限制信息
+//	@return	[]mysql.Commodity	商品结构体列表
+func GetCommoditiesByKind(db *gorm.DB, listInfo CommoditiesInfo) []mysql.Commodity {
 	var commodities []mysql.Commodity
 
 	var order string
 	// 默认按照ID排序
-	if sort == "" {
+	if listInfo.Sort == "" {
 		order = "id"
 	} else {
-		order = sort
+		order = listInfo.Sort
 	}
 	// 根据 reverse 获取排序规则
-	if reverse == false { //升序
+	if listInfo.Reverse == "" || strings.ToUpper(listInfo.Reverse) == "ASC" { //升序
 		order += " ASC"
 	} else { // 降序
 		order += " DESC"
@@ -72,19 +59,19 @@ func GetCommoditiesByKind(db *gorm.DB, kind, sort string, reverse bool, page, co
 
 	// 如果 kind 为空，从所有商品中寻找
 	// 如果 kind 不为空，则加入筛选条件
-	if kind != "" {
+	if listInfo.Kind != "" {
 		subQuery :=
 			db.Model(&mysql.CommodityKind{}).
 				Select("commodity_id").
-				Where("kind = ?", kind)
+				Where("kind = ?", listInfo.Kind)
 		query = query.Where("id IN (?)", subQuery)
 	}
 
-	offset := (page - 1) * count
+	offset := (listInfo.Page - 1) * listInfo.Count
 	// 查询 Commodity 表，获取指定页数和数量的记录，并按排序参数排序
 	query.Order(order).
 		Offset(offset).
-		Limit(count).
+		Limit(listInfo.Count).
 		Find(&commodities)
 	return commodities
 }

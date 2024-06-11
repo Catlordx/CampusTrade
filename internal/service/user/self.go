@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 // InquireInfo
@@ -135,27 +134,17 @@ func FavoriteList(c *gin.Context) {
 		return
 	}
 
-	sort := c.PostForm("count")
-	reverseStr := c.PostForm("reverse")
-	page, _ := strconv.Atoi(c.PostForm("page"))
-	count, _ := strconv.Atoi(c.PostForm("count"))
-
-	var reverse bool
-	if strings.ToLower(reverseStr) == "asc" || strings.ToLower(reverseStr) == "" { //默认升序
-		reverse = false
-	} else if strings.ToLower(reverseStr) == "desc" {
-		reverse = true
+	var favoriteListInfo commodity.FavoritesInfo
+	err := c.ShouldBindJSON(&favoriteListInfo)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
+	favoriteListInfo.UserID = user.ID
 
 	appContext := c.MustGet("appContext").(*config.AppContext)
 	commodityList :=
-		commodity.GetFavorites(
-			appContext.DB,
-			user.ID,
-			sort,
-			reverse,
-			page,
-			count)
+		commodity.GetFavorites(appContext.DB, favoriteListInfo)
 
 	c.JSON(http.StatusOK, commodityList)
 }
