@@ -19,13 +19,15 @@ func setUserRouter(r *gin.Engine) {
 			// TODO 获得用户信息
 			userGroup.GET("/profile/info", user.InquireInfo)
 			userGroup.GET("/profile/anyone_info", user.InquireAnyoneInfo)
+
 			// TODO 修改用户信息
 			userGroup.PUT("/profile/modify_info", user.ModifyInfo)
 			userGroup.PUT("/profile/modify_anyone_role", user.ModifyAnyoneInfo)
+
 			// TODO 商品收藏管理
 			userGroup.POST("/favorite/add", user.AddFavorite)
 			userGroup.DELETE("/favorite/remove", user.RemoveFavorite)
-			userGroup.GET("/favorite/list", user.FavoriteList)
+			userGroup.GET("/favorite/list/:sort/:reverse/:page/:count", user.FavoriteList)
 		}
 	}
 }

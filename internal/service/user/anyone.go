@@ -19,7 +19,7 @@ func InquireAnyoneInfo(c *gin.Context) {
 		return
 	}
 
-	if CheckUserPermission(c, user.Role, permission.InquireAnyoneInfo) == false {
+	if CheckUserPermission(c, user, permission.InquireAnyoneInfo) == false {
 		return
 	}
 
@@ -51,25 +51,22 @@ func ModifyAnyoneInfo(c *gin.Context) {
 		return
 	}
 
-	if CheckUserPermission(c, user.Role, permission.ModifyAnyoneInfo) == false {
+	if CheckUserPermission(c, user, permission.ModifyAnyoneInfo) == false {
 		return
 	}
 
-	modifiedUser := c.PostForm("modified_user")
+	modifiedUserUsername := c.PostForm("modified_user")
 	newUsername := c.PostForm("new_username")
 	newRealName := c.PostForm("new_real_name")
 	newPassword := c.PostForm("new_password")
 	newPhoneNumber := c.PostForm("new_phone_number")
 
 	appContext := c.MustGet("appContext").(*config.AppContext)
-	result := _user.ModifyUser(appContext.DB, modifiedUser, newUsername, newRealName, newPassword, newPhoneNumber)
-	if result == false {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "未找到被修改用户的信息",
-		})
+	modifiedUser := _user.GetUserByUsername(appContext.DB, modifiedUserUsername)
+	if modifiedUser == nil {
+		c.JSON(http.StatusOK, gin.H{"message": "未找到被修改用户的信息"})
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "修改用户信息成功",
-	})
+	CheckModifyUser(c, modifiedUser.ID, newUsername, newRealName, newPassword, newPhoneNumber)
 }
