@@ -27,7 +27,7 @@ func setUserRouter(r *gin.Engine) {
 			// TODO 商品收藏管理
 			userGroup.POST("/favorite/add", user.AddFavorite)
 			userGroup.DELETE("/favorite/remove", user.RemoveFavorite)
-			userGroup.GET("/favorite/list/:sort/:reverse/:page/:count", user.FavoriteList)
+			userGroup.POST("/favorite/list", user.FavoriteList)
 		}
 	}
 }

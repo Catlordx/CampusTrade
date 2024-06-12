@@ -69,7 +69,15 @@ func TestGetFavorites(t *testing.T) {
 	defer func() { db.Unscoped().Delete(&testUserFavorites) }()
 
 	//user1，price升序
-	user1AscByPrice := commodity.GetFavorites(db, 1, "price", false, 1, 10)
+	user1AscByPrice :=
+		commodity.GetFavorites(
+			db,
+			commodity.FavoritesInfo{
+				UserID:  1,
+				Sort:    "price",
+				Reverse: "ASC",
+				Page:    1,
+				Count:   10})
 	require.Equal(t, 4, len(user1AscByPrice), "user1AscByPrice should have four items")
 	fmt.Println("user1's favorites, asc by price:")
 	for _, _commodity := range user1AscByPrice {
@@ -77,7 +85,15 @@ func TestGetFavorites(t *testing.T) {
 	}
 
 	//user2, created_at降序
-	user2DescByCreatedAt := commodity.GetFavorites(db, 2, "created_at", true, 1, 10)
+	user2DescByCreatedAt :=
+		commodity.GetFavorites(
+			db,
+			commodity.FavoritesInfo{
+				UserID:  2,
+				Sort:    "created_at",
+				Reverse: "DESC",
+				Page:    1,
+				Count:   10})
 	require.Equal(t, 2, len(user2DescByCreatedAt), "user2DescByCreatedAt should have two items")
 	fmt.Println("user2's favorites, desc by created_at:")
 	for _, _commodity := range user2DescByCreatedAt {
@@ -85,7 +101,15 @@ func TestGetFavorites(t *testing.T) {
 	}
 
 	//user1, 默认降序分页
-	user1DescByDefault := commodity.GetFavorites(db, 1, "", true, 2, 2)
+	user1DescByDefault :=
+		commodity.GetFavorites(
+			db,
+			commodity.FavoritesInfo{
+				UserID:  1,
+				Sort:    "",
+				Reverse: "DESC",
+				Page:    2,
+				Count:   2})
 	require.Equal(t, 2, len(user1DescByDefault), "user1DescByDefault should have two item")
 	fmt.Println("user1's favorites, desc by default:")
 	for _, _commodity := range user1DescByDefault {

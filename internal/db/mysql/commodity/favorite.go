@@ -4,7 +4,16 @@ import (
 	"errors"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql"
 	"gorm.io/gorm"
+	"strings"
 )
+
+type FavoritesInfo struct {
+	UserID  uint   //用户ID，列表查询ID为UserID的用户收藏的商品
+	Sort    string `json:"sort"`    //列表按照sort的值进行排序，sort为空字符串时默认按照ID排序
+	Reverse string `json:"reverse"` //排序规则，ASC升序，DESC降序
+	Page    int    `json:"page"`    //第page页
+	Count   int    `json:"count"`   //每页商品个数
+}
 
 // AddFavorite
 //
@@ -57,43 +66,39 @@ func RemoveFavorite(db *gorm.DB, userID, favoriteID uint) bool {
 
 // GetFavorites
 //
-//	@Description: 获取收藏商品分类分页列表，该列表按照sort的值进行排序
+//	@Description: 获取收藏商品列表
 //	@param	db					数据库DB
-//	@param	userID				用户ID
-//	@param	sort				列表按照sort的值进行排序，sort为空字符串时默认按照ID排序
-//	@param	reverse				排序规则，true降序排列，false升序排列
-//	@param	page				第page页
-//	@param	count				每页商品个数
-//	@return	[]mysql.Commodity	商品列表
-func GetFavorites(db *gorm.DB, userID uint, sort string, reverse bool, page, count int) []mysql.Commodity {
-	var commodities []mysql.Commodity
+//	@param	listInfo			收藏商品列表的限制信息
+//	@return	[]mysql.Commodity	收藏商品列表
+func GetFavorites(db *gorm.DB, listInfo FavoritesInfo) []mysql.Commodity {
+	var favorites []mysql.Commodity
 
 	var order string
 	// 默认按照ID排序
-	if sort == "" {
+	if listInfo.Sort == "" {
 		order = "id"
 	} else {
-		order = sort
+		order = listInfo.Sort
 	}
 	// 根据 reverse 获取排序规则
-	if reverse { // 降序
-		order += " DESC"
-	} else { //升序
+	if listInfo.Reverse == "" || strings.ToUpper(listInfo.Reverse) == "ASC" { //升序
 		order += " ASC"
+	} else { // 降序
+		order += " DESC"
 	}
 
 	subQuery :=
 		db.Model(&mysql.UserFavorite{}).
 			Select("commodity_id").
-			Where("user_id = ?", userID)
+			Where("user_id = ?", listInfo.UserID)
 
-	offset := (page - 1) * count
+	offset := (listInfo.Page - 1) * listInfo.Count
 	db.Model(&mysql.Commodity{}).
 		Where("id IN (?)", subQuery).
 		Order(order).
 		Offset(offset).
-		Limit(count).
-		Find(&commodities)
+		Limit(listInfo.Count).
+		Find(&favorites)
 
-	return commodities
+	return favorites
 }
