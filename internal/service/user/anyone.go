@@ -71,6 +71,10 @@ func ModifyAnyoneInfo(c *gin.Context) {
 	CheckModifyUser(c, modifiedUser.ID, newUsername, newRealName, newPassword, newPhoneNumber)
 }
 
+// GetUserInfoList
+//
+//	@Description: 获取用户信息列表，，信息包括用户名，真实姓名，手机号，用户角色，用户状态
+//	@param	c	*gin.Context
 func GetUserInfoList(c *gin.Context) {
 	user := GetUserFromClaims(c)
 	if user == nil {
