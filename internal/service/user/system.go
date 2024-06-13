@@ -3,6 +3,7 @@ package user
 import (
 	"github.com/Catlordx/CampusTrade/internal/core/config"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/role"
+	"github.com/Catlordx/CampusTrade/internal/db/mysql/status"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/user"
 	"github.com/Catlordx/CampusTrade/internal/utils"
 	"github.com/gin-gonic/gin"
@@ -69,7 +70,14 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
+	if _user.Status == status.Online {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "用户已经登录",
+		})
+		return
+	}
 
+	_ = user.ModifyStatus(appContext.DB, _user.ID, status.Online)
 	token, err := utils.GenerateToken(_user.ID, _user.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

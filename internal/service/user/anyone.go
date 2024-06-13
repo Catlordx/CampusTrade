@@ -70,3 +70,30 @@ func ModifyAnyoneInfo(c *gin.Context) {
 
 	CheckModifyUser(c, modifiedUser.ID, newUsername, newRealName, newPassword, newPhoneNumber)
 }
+
+// GetUserInfoList
+//
+//	@Description: 获取用户信息列表，，信息包括用户名，真实姓名，手机号，用户角色，用户状态
+//	@param	c	*gin.Context
+func GetUserInfoList(c *gin.Context) {
+	user := GetUserFromClaims(c)
+	if user == nil {
+		return
+	}
+
+	if CheckUserPermission(c, user, permission.InquireAnyoneInfo) == false {
+		return
+	}
+
+	var userListInfo _user.ListUserInfo
+	err := c.ShouldBind(&userListInfo)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	appContext := c.MustGet("appContext").(*config.AppContext)
+	userList := _user.GetUserList(appContext.DB, userListInfo)
+
+	c.JSON(http.StatusOK, userList)
+}

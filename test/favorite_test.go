@@ -72,7 +72,7 @@ func TestGetFavorites(t *testing.T) {
 	user1AscByPrice :=
 		commodity.GetFavorites(
 			db,
-			commodity.FavoritesInfo{
+			commodity.ListFavoriteInfo{
 				UserID:  1,
 				Sort:    "price",
 				Reverse: "ASC",
@@ -88,7 +88,7 @@ func TestGetFavorites(t *testing.T) {
 	user2DescByCreatedAt :=
 		commodity.GetFavorites(
 			db,
-			commodity.FavoritesInfo{
+			commodity.ListFavoriteInfo{
 				UserID:  2,
 				Sort:    "created_at",
 				Reverse: "DESC",
@@ -104,7 +104,7 @@ func TestGetFavorites(t *testing.T) {
 	user1DescByDefault :=
 		commodity.GetFavorites(
 			db,
-			commodity.FavoritesInfo{
+			commodity.ListFavoriteInfo{
 				UserID:  1,
 				Sort:    "",
 				Reverse: "DESC",

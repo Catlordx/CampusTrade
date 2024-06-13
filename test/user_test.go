@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/role"
+	"github.com/Catlordx/CampusTrade/internal/db/mysql/status"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql/user"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -89,4 +90,95 @@ func TestModifyUser(t *testing.T) {
 	require.NoError(t, err, "user should be modified")
 	testUser1 = user.GetUserByID(db, testUser1ID)
 	fmt.Printf("%v\t%v\t%v\t%v\n", testUser1.Username, testUser1.RealName, testUser1.PhoneNumber, testUser1.Password)
+}
+
+func TestGetUserInfoList(t *testing.T) {
+	conf := mysql.DbConfig{}
+	db, _ := mysql.Connect(&conf)
+	_ = db.AutoMigrate(&mysql.User{})
+
+	testUser := []mysql.User{
+		{Username: "test1", RealName: "N", Role: role.User, Status: status.Offline, Password: []byte(""), PhoneNumber: ""},
+		{Username: "test2", RealName: "G", Role: role.User, Status: status.Online, Password: []byte(""), PhoneNumber: ""},
+		{Username: "test3", RealName: "Y", Role: role.Admin, Status: status.Online, Password: []byte(""), PhoneNumber: ""},
+		{Username: "test4", RealName: "A", Role: role.User, Status: status.Offline, Password: []byte(""), PhoneNumber: ""},
+		{Username: "test5", RealName: "O", Role: role.Admin, Status: status.Offline, Password: []byte(""), PhoneNumber: ""},
+	}
+	db.Model(&mysql.User{}).Create(testUser)
+	defer func() {
+		for _, i := range testUser {
+			_user := user.GetUserByUsername(db, i.Username)
+			db.Unscoped().Delete(&_user)
+		}
+	}()
+
+	ListInfo1 := user.ListUserInfo{
+		Class: "username",
+		Order: "DESC",
+		Page:  2,
+		Count: 2,
+	}
+	userInfos1 := user.GetUserList(db, ListInfo1)
+	require.NotEmpty(t, userInfos1, "userInfos1 should not be empty")
+	fmt.Println("Username, DESC, Page2, 2 per Page")
+	for _, userInfo := range userInfos1 {
+		fmt.Printf("Username:%v\n", userInfo.Username)
+	}
+	fmt.Println()
+
+	ListInfo2 := user.ListUserInfo{
+		Class: "real_name",
+		Order: "ASC",
+		Page:  1,
+		Count: 10,
+	}
+	userInfos2 := user.GetUserList(db, ListInfo2)
+	require.NotEmpty(t, userInfos2, "userInfos2 should not be empty")
+	fmt.Println("RealName, ASC, Page1, 10 per Page")
+	for _, userInfo := range userInfos2 {
+		fmt.Printf("Username:%v\tRealName:%v\n", userInfo.Username, userInfo.RealName)
+	}
+	fmt.Println()
+
+	ListInfo3 := user.ListUserInfo{
+		Class: "role",
+		Order: "",
+		Page:  1,
+		Count: 10,
+	}
+	userInfos3 := user.GetUserList(db, ListInfo3)
+	require.NotEmpty(t, userInfos3, "userInfos3 should not be empty")
+	fmt.Println("Role, Default, Page1, 10 per Page")
+	for _, userInfo := range userInfos3 {
+		fmt.Printf("Username:%v\tRole:%v\n", userInfo.Username, userInfo.Role)
+	}
+	fmt.Println()
+
+	ListInfo4 := user.ListUserInfo{
+		Class: "status",
+		Order: "",
+		Page:  1,
+		Count: 10,
+	}
+	userInfos4 := user.GetUserList(db, ListInfo4)
+	require.NotEmpty(t, userInfos4, "userInfos4 should not be empty")
+	fmt.Println("Status, Default, Page1, 10 per Page")
+	for _, userInfo := range userInfos4 {
+		fmt.Printf("Username:%v\tStatus:%v\n", userInfo.Username, userInfo.Status)
+	}
+	fmt.Println()
+
+	ListInfo5 := user.ListUserInfo{
+		Class: "",
+		Order: "",
+		Page:  1,
+		Count: 10,
+	}
+	userInfos5 := user.GetUserList(db, ListInfo5)
+	require.NotEmpty(t, userInfos5, "userInfos5 should not be empty")
+	fmt.Println("Default, Default, Page1, 10 per Page")
+	for _, userInfo := range userInfos5 {
+		fmt.Printf("Username:%v\n", userInfo.Username)
+	}
+	fmt.Println()
 }

@@ -3,9 +3,27 @@ package user
 import (
 	"errors"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql"
+	"github.com/Catlordx/CampusTrade/internal/db/mysql/role"
+	"github.com/Catlordx/CampusTrade/internal/db/mysql/status"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"strings"
 )
+
+type ListUserInfo struct {
+	Class string `json:"class"`
+	Order string `json:"order"`
+	Page  int    `json:"page"`
+	Count int    `json:"count"`
+}
+
+type InquireUserInfo struct {
+	Username    string
+	RealName    string
+	PhoneNumber string
+	Role        string
+	Status      string
+}
 
 // GetUserByID
 //
@@ -86,4 +104,48 @@ func RolePermission(db *gorm.DB, role string) []string {
 		return nil
 	}
 	return permissions
+}
+
+func GetUserList(db *gorm.DB, listInfo ListUserInfo) []InquireUserInfo {
+	var userInfoList []InquireUserInfo
+
+	var order string
+	switch listInfo.Class {
+	case "":
+		order = "id"
+	//按role排序：升序为admin-user，降序为user-admin
+	case "role":
+		order = "CASE " +
+			"WHEN role = '" + role.Admin + "' THEN 1 " +
+			"WHEN role = '" + role.User + "' THEN 2 " +
+			"END"
+	//按status排序：升序为online-offline，降序为offline-online
+	case "status":
+		order = "CASE " +
+			"WHEN status = '" + status.Online + "' THEN 1 " +
+			"WHEN status = '" + status.Offline + "' THEN 2 " +
+			"END"
+	default:
+		order = listInfo.Class
+	}
+
+	if listInfo.Order == "" || strings.ToUpper(listInfo.Order) == "ASC" {
+		order += " ASC"
+	} else {
+		order += " DESC"
+	}
+
+	offset := (listInfo.Page - 1) * listInfo.Count
+	db.Model(&mysql.User{}).
+		Select("username",
+			"real_name",
+			"phone_number",
+			"role",
+			"status").
+		Order(order).
+		Offset(offset).
+		Limit(listInfo.Count).
+		Find(&userInfoList)
+
+	return userInfoList
 }

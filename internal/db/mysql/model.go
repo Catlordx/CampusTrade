@@ -64,6 +64,7 @@ type User struct {
 	Password    []byte `gorm:"not null"`
 	PhoneNumber string
 	Role        string `gorm:"not null"`
+	Status      string `gorm:"default:'offline'"`
 }
 
 // RolePermission 角色权限关联表

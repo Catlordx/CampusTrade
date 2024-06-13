@@ -47,7 +47,7 @@ func (db *DbConfig) String() string {
 
 // Connect to the database and return database handle
 func Connect(instance *DbConfig) (*gorm.DB, error) {
-	profileLoc := "D:\\dev\\Go\\CampusTrade\\configs\\config.dev.toml"
+	profileLoc := "C:\\Users\\86131\\CampusTrade\\internal\\configs\\config.dev.toml"
 	v := viper.New()
 	v.SetConfigFile(profileLoc)
 	dsn, err := instance.LoadDbConfigFromViper(v)

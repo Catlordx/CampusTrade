@@ -134,7 +134,7 @@ func FavoriteList(c *gin.Context) {
 		return
 	}
 
-	var favoriteListInfo commodity.FavoritesInfo
+	var favoriteListInfo commodity.ListFavoriteInfo
 	err := c.ShouldBindJSON(&favoriteListInfo)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

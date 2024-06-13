@@ -19,6 +19,7 @@ func setUserRouter(r *gin.Engine) {
 			// TODO 获得用户信息
 			userGroup.GET("/profile/info", user.InquireInfo)
 			userGroup.GET("/profile/anyone_info", user.InquireAnyoneInfo)
+			userGroup.GET("/profile/users", user.GetUserInfoList)
 
 			// TODO 修改用户信息
 			userGroup.PUT("/profile/modify_info", user.ModifyInfo)

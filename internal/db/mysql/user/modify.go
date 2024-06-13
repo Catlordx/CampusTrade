@@ -70,3 +70,19 @@ func ModifyPhoneNumber(db *gorm.DB, userID uint, newPhoneNumber string) error {
 	db.Model(&user).Update("phone_number", newPhoneNumber)
 	return nil
 }
+
+// ModifyStatus
+//
+//	@Description: 修改用户状态
+//	@param	db			数据库DB
+//	@param	userID		用户ID
+//	@param	newStatus	新状态
+//	@return	error		处理结果
+func ModifyStatus(db *gorm.DB, userID uint, newStatus string) error {
+	user := GetUserByID(db, userID)
+	if newStatus == user.Status {
+		return errors.New("new status is the same as old status")
+	}
+	db.Model(&user).Update("status", newStatus)
+	return nil
+}

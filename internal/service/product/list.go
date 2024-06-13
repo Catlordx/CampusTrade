@@ -12,7 +12,7 @@ import (
 //	@Description: 获取拥有某类型的商品分页列表
 //	@param	c	gin.Context
 func CommodityListByLike(c *gin.Context) {
-	var commodityListInfo commodity.CommoditiesInfo
+	var commodityListInfo commodity.ListCommodityInfo
 	err := c.ShouldBindJSON(&commodityListInfo)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
