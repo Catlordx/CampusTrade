@@ -8,11 +8,11 @@ import (
 )
 
 type ListCommodityInfo struct {
-	Kind    string `json:"kind"`    //列表按照kind进行分类，kind为空字符串时表示不分类，即从所有商品中寻找
-	Sort    string `json:"sort"`    //列表按照sort的值进行排序，sort为空字符串时默认按照ID排序
-	Reverse string `json:"reverse"` //排序规则，ASC升序，DESC降序
-	Page    int    `json:"page"`    //第page页
-	Count   int    `json:"count"`   //每页商品个数
+	Kind    string `json:"kind" form:"kind"`       //列表按照kind进行分类，kind为空字符串时表示不分类，即从所有商品中寻找
+	Sort    string `json:"sort" form:"sort"`       //列表按照sort的值进行排序，sort为空字符串时默认按照ID排序
+	Reverse string `json:"reverse" form:"reverse"` //排序规则，ASC升序，DESC降序
+	Page    int    `json:"page" form:"page"`       //第page页
+	Count   int    `json:"count" form:"count"`     //每页商品个数
 }
 
 // GetCommodityByID
