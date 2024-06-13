@@ -53,6 +53,7 @@ func Login(c *gin.Context) {
 	err := c.ShouldBind(&_userInfo)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	appContext := c.MustGet("appContext").(*config.AppContext)

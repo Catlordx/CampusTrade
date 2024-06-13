@@ -11,10 +11,10 @@ import (
 )
 
 type ListUserInfo struct {
-	Class string `json:"class"`
-	Order string `json:"order"`
-	Page  int    `json:"page"`
-	Count int    `json:"count"`
+	Class string `json:"class" form:"class"`
+	Order string `json:"order" form:"order"`
+	Page  int    `json:"page" form:"page"`
+	Count int    `json:"count" form:"count"`
 }
 
 type InquireUserInfo struct {
@@ -106,6 +106,12 @@ func RolePermission(db *gorm.DB, role string) []string {
 	return permissions
 }
 
+// GetUserList
+//
+//	@Description: 获取用户信息列表，信息包括用户名，真实姓名，手机号，用户角色，用户状态
+//	@param	db					数据库DB
+//	@param	listInfo			用户列表限制要求
+//	@return	[]InquireUserInfo	用户信息列表
 func GetUserList(db *gorm.DB, listInfo ListUserInfo) []InquireUserInfo {
 	var userInfoList []InquireUserInfo
 
