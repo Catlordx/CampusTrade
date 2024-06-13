@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type FavoritesInfo struct {
+type ListFavoriteInfo struct {
 	UserID  uint   //用户ID，列表查询ID为UserID的用户收藏的商品
 	Sort    string `json:"sort"`    //列表按照sort的值进行排序，sort为空字符串时默认按照ID排序
 	Reverse string `json:"reverse"` //排序规则，ASC升序，DESC降序
@@ -70,7 +70,7 @@ func RemoveFavorite(db *gorm.DB, userID, favoriteID uint) bool {
 //	@param	db					数据库DB
 //	@param	listInfo			收藏商品列表的限制信息
 //	@return	[]mysql.Commodity	收藏商品列表
-func GetFavorites(db *gorm.DB, listInfo FavoritesInfo) []mysql.Commodity {
+func GetFavorites(db *gorm.DB, listInfo ListFavoriteInfo) []mysql.Commodity {
 	var favorites []mysql.Commodity
 
 	var order string

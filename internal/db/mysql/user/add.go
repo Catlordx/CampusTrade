@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	"github.com/Catlordx/CampusTrade/internal/db/mysql"
+	"github.com/Catlordx/CampusTrade/internal/db/mysql/status"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -33,6 +34,7 @@ func AddUser(db *gorm.DB, username, realName, password, phoneNumber, role string
 		Password:    hashedPassword,
 		PhoneNumber: phoneNumber,
 		Role:        role,
+		Status:      status.Offline,
 	}
 	db.Create(&user)
 	return nil

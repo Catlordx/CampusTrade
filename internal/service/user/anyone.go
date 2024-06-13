@@ -70,3 +70,26 @@ func ModifyAnyoneInfo(c *gin.Context) {
 
 	CheckModifyUser(c, modifiedUser.ID, newUsername, newRealName, newPassword, newPhoneNumber)
 }
+
+func GetUserInfoList(c *gin.Context) {
+	user := GetUserFromClaims(c)
+	if user == nil {
+		return
+	}
+
+	if CheckUserPermission(c, user, permission.InquireAnyoneInfo) == false {
+		return
+	}
+
+	var userListInfo _user.ListUserInfo
+	err := c.ShouldBind(&userListInfo)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	appContext := c.MustGet("appContext").(*config.AppContext)
+	userList := _user.GetUserList(appContext.DB, userListInfo)
+
+	c.JSON(http.StatusOK, userList)
+}

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type CommoditiesInfo struct {
+type ListCommodityInfo struct {
 	Kind    string `json:"kind"`    //列表按照kind进行分类，kind为空字符串时表示不分类，即从所有商品中寻找
 	Sort    string `json:"sort"`    //列表按照sort的值进行排序，sort为空字符串时默认按照ID排序
 	Reverse string `json:"reverse"` //排序规则，ASC升序，DESC降序
@@ -37,7 +37,7 @@ func GetCommodityByID(db *gorm.DB, ID uint) *mysql.Commodity {
 //	@param	db					数据库DB
 //	@param	listInfo			商品列表的限制信息
 //	@return	[]mysql.Commodity	商品结构体列表
-func GetCommoditiesByKind(db *gorm.DB, listInfo CommoditiesInfo) []mysql.Commodity {
+func GetCommoditiesByKind(db *gorm.DB, listInfo ListCommodityInfo) []mysql.Commodity {
 	var commodities []mysql.Commodity
 
 	var order string

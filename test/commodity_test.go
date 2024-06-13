@@ -35,7 +35,7 @@ func TestGetCommoditiesByKind(t *testing.T) {
 	Kind1AscByPrice :=
 		commodity.GetCommoditiesByKind(
 			db,
-			commodity.CommoditiesInfo{
+			commodity.ListCommodityInfo{
 				Kind:    "kind1",
 				Sort:    "price",
 				Reverse: "ASC",
@@ -51,7 +51,7 @@ func TestGetCommoditiesByKind(t *testing.T) {
 	Kind2DescByCreatedAt :=
 		commodity.GetCommoditiesByKind(
 			db,
-			commodity.CommoditiesInfo{
+			commodity.ListCommodityInfo{
 				Kind:    "kind2",
 				Sort:    "",
 				Reverse: "DESC",
@@ -66,7 +66,7 @@ func TestGetCommoditiesByKind(t *testing.T) {
 	//不分类，created_at降序分页
 	NoKindDescByDefault :=
 		commodity.GetCommoditiesByKind(
-			db, commodity.CommoditiesInfo{
+			db, commodity.ListCommodityInfo{
 				Kind:    "",
 				Sort:    "created_at",
 				Reverse: "DESC",
